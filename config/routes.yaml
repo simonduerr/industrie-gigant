@@ -1,3 +1,34 @@
 #index:
 #    path: /
 #    controller: App\Controller\DefaultController::index
+app_lucky_number:
+    path: lucky/number
+    controller: App\Controller\LuckyController::number
+
+add_building:
+    path: tile/{tileId}/build/building/{buildingId}
+    controller: App\Controller\TileController::addBuilding
+
+add_infrastructure:
+    path: tile/{tileId}/build/infrastructure/{infrastructureId}
+    controller: App\Controller\TileController::addInfrastructure
+
+add_infrastructure_multiple:
+    path: infrastructure/build
+    controller: App\Controller\TileController::addInfrastructureMultiple
+
+get_built_objects_list:
+    path: built-objects/all
+    controller: App\Controller\BuiltObjectController::getList
+
+remove_built_object:
+    path: built-object/{builtObjId}/destroy
+    controller: App\Controller\BuiltObjectController::destroy
+
+get_buildings_list:
+    path: buildings/all
+    controller: App\Controller\BuildingController::getList
+
+get_tiles_list:
+    path: tiles/all
+    controller: App\Controller\TileController::getList

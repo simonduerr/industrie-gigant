@@ -1,0 +1,18 @@
+{
+  "title": "Add house",
+  "type": "array",
+  "properties": {
+    "x": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "y": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "house": {
+     "type": "string"
+    }
+  },
+  "required": ["x", "y", "house"]
+}
