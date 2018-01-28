@@ -1,10 +1,11 @@
 $(function () {
-    var data = {
+    /*var data = {
         tiles: [{
             tileId: 651,
             infraId: 2
         }, {
-            tileId: 652
+            tileId: 652,
+            infraId: 3
         }]
     };
     console.log(data);
@@ -17,23 +18,44 @@ $(function () {
             console.log(data);
         }
 
-    });
+    });*/
 
     $.ajax({
         dataType: "json",
         url: 'http://localhost:8000/buildings/all',
         success: function (data) {
-            console.log(data);
+            //console.log(data);
             var html = '';
             $.each(data, function (i, element) {
-                console.log(element);
+                //console.log(element);
                 html += '<div class="menutile" data-id="' + element.id + '">' + element.name + '</div>'
             });
 
             $('#menubar').html(html);
 
-            $('.menutile').click(function (e) {
+            $('#menubar .menutile').click(function (e) {
                 $('#cursor').data('id', $(this).data('id'));
+                $('#cursor').data('type', 'building');
+                $('.menutile').removeClass('active');
+                $(this).addClass('active');
+            });
+        }
+    });
+
+    $.ajax({
+        dataType: "json",
+        url: 'http://localhost:8000/infrastructure/all',
+        success: function (data) {
+            var html = '';
+            $.each(data, function (i, element) {
+                html += '<div class="menutile" data-id="' + i + '">' + element + '</div>'
+            });
+
+            $('#menubar-infra').html(html);
+
+            $('#menubar-infra .menutile').click(function (e) {
+                $('#cursor').data('id', $(this).data('id'));
+                $('#cursor').data('type', 'infra');
                 $('.menutile').removeClass('active');
                 $(this).addClass('active');
             });
@@ -45,53 +67,75 @@ $(function () {
         url: 'http://localhost:8000/tiles/all',
         success: function (data) {
             var html = '';
-            console.log(data);
+            //console.log(data);
             $.each(data, function (i, element) {
-                console.log(element);
-                html += '<div class="tile" data-id="' + element.id + '" data-x="' + element.x + '" data-y="' +
-                    element.y + '" style="left: ' + element.x * 55 + 'px; top: ' + element.y * 55 + 'px"></div>';
-                console.log(html);
+                //console.log(element);
+                html += '<div class="tile"' +
+                    'data-id="' + element.id +
+                    '" data-x="' + element.x +
+                    '" data-y="' + element.y +
+                    '" data-building="' + element.builtObject +
+                    '" data-infra="' + element.infrastructure +
+                    '" data-terrain="' + element.terrain +
+                    '" style="left: ' + element.x * 55 + 'px; top: ' + element.y * 55 + 'px"></div>';
+                //console.log(html);
             });
             $('#field').html(html);
+            rewriteTiles();
 
             $('.tile').click(function (e) {
                 var cursor = $('#cursor');
                 var tile = $(this);
-                if (isHousePlaceable(cursor.data('id'), tile)) {
-                    $.ajax({
-                        dataType: "json",
-                        url: 'http://localhost:8000/tile/' + tile.data('id') + '/add/building   /' + cursor.data('id'),
-                        success: function (data) {
-                            if (data.validation === 1) {
-                                if (data.error === 0) {
-                                    console.log('Das Haus ' + cursor.data('action') + ' steht jetzt auf Platz ' + tile.data('x') + "/" + tile.data('y'));
-                                    tile.addClass(cursor.data('action'));
-                                    tile.data('house', cursor.data('action'));
-                                    $.each(getAffectedTiles(cursor.data('action'), tile), function (i, element) {
-                                        element.addClass(cursor.data('action'));
-                                        element.data('blocked-by', cursor.data('action'));
-                                    });
-                                    cursor.data('action', '');
-                                    $('.menutile').removeClass('active');
-                                }
-                            }
-                            console.log(data.message);
-                        },
-                        statusCode: {
-                            404: function () {
-                                console.log("page not found");
-                            },
-                            500: function () {
-                                console.log("server error");
-                            }
+                var id = cursor.data('id');
+                var type = cursor.data('type');
+
+
+                if (type === 'building') {
+                    url = 'tile/' + tile.data('id') + '/build/building/' + id;
+                    console.log(url);
+                    success = function (data) {
+                        console.log(data);
+                        if (!data['code']) {
+                            tile.data('building', data[0]['id']);
+                            rewriteTiles();
                         }
-                    });
+                    };
+                    doAjax(url, null, success);
                 }
+                else if (type === 'infra') {
+                    url = 'tile/' + tile.data('id') + '/build/infrastructure/' + id;
+                    console.log(url);
+                    success = function (data) {
+                        console.log(data);
+                        if (!data['code']) {
+                            tile.data('infra', data[0]['infrastructure']);
+                            rewriteTiles();
+                        }
+                    };
+                    doAjax(url, null, success);
+                }
+
             });
         }
     });
 });
 
+function doAjax(url, data, success) {
+    $.ajax({
+        dataType: "json",
+        data: data,
+        url: 'http://localhost:8000/' + url,
+        success: success,
+        statusCode: {
+            404: function () {
+                console.log("page not found");
+            },
+            500: function () {
+                console.log("server error");
+            }
+        }
+    });
+}
 
 function isHousePlaceable(house_id, tile) {
     return true;
@@ -116,7 +160,14 @@ function isHousePlaceable(house_id, tile) {
 }
 
 function getAffectedTiles(house_id, tile) {
-
 }
 
+function rewriteTiles() {
+    $('.tile').each(function (i, element) {
+        html = 'B: ' + ($(this).data('building') ? $(this).data('building') : '') + '<br />';
+        html += 'I: ' + ($(this).data('infra') ? $(this).data('infra') : '') + '<br />';
+        html += 'T: ' + ($(this).data('terrain') ? $(this).data('terrain') : '') + '<br />';
+        $(this).html(html);
+    });
+}
 

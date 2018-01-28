@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use JsonSchema\Constraints\Constraint;
+
 /**
  * Class JsonValidator
  * @package App\Service
@@ -32,7 +34,11 @@ final class JsonValidator
         $path = $this->rootDir . '/JsonSchema/' . $schemaFile;
 
         $validator = new \JsonSchema\Validator();
-        $validator->coerce($json, (object)['$ref' => 'file://' . $path]);
+        $validator->validate(
+            $json,
+            (object)['$ref' => 'file://' . $path],
+            Constraint::CHECK_MODE_TYPE_CAST + Constraint::CHECK_MODE_COERCE_TYPES
+        );
 
         if (false === $validator->isValid()) {
             $validationMessage = "JSON does not validate. Violations:\n";

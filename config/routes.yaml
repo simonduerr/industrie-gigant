@@ -32,3 +32,7 @@ get_buildings_list:
 get_tiles_list:
     path: tiles/all
     controller: App\Controller\TileController::getList
+
+get_infrastructure_list:
+    path: infrastructure/all
+    controller: App\Controller\InfrastructureController::getList

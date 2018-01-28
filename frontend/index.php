@@ -8,6 +8,7 @@
 <body>
 <input type="text" id="cursor" style="display:block;"/>
 <div id="menubar"></div>
+<div id="menubar-infra"></div>
 <div id="field"></div>
 <script src="scripts.js"></script>
 </body>

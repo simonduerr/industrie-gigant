@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Building;
 use App\Entity\BuiltObject;
-use App\Entity\House;
 use App\Entity\Tile;
 use App\Enum\BuildingTypeEnum;
 use App\Enum\InfrastructureEnum;
@@ -13,7 +12,6 @@ use App\Enum\StatusEnum;
 use App\Service\JsonValidator;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
-use const Grpc\STATUS_CANCELLED;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -48,7 +46,7 @@ final class TileController extends Controller
         if (!$tile) {
             return $responseService->createStatusResponse(StatusEnum::TILE_NOT_FOUND);
         }
-        if ($tile->getBuiltObject() !== null) {
+        if ($tile->getBuiltObject() !== null || $tile->getInfrastructure() !== null) {
             return $responseService->createStatusResponse(StatusEnum::TILE_NOT_EMPTY);
         }
 
@@ -109,7 +107,6 @@ final class TileController extends Controller
     ) {
         $data = Request::createFromGlobals()->query->all();
         if (false === $jsonValidator->validateByFile(JsonSchemaFileEnum::INFRA_ADD_MULTIPLE, $data)) {
-            return $responseService->createResponseWithContent($data);
             return $responseService->createStatusResponse(StatusEnum::GENERAL_INVALID_REQUEST);
         }
 
